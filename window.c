@@ -119,7 +119,7 @@ void win_init(win_t *win)
 	float alpha;
 	char *endptr;
 #if HAVE_LIBFONTS
-	const char *bar_fg, *bar_bg, *f;
+	const char *bar_fg, *bar_bg, *f, *bar_alpha;
 
 	static char lbuf[512 + UTF8_PADDING], rbuf[64 + UTF8_PADDING];
 #endif
@@ -180,8 +180,25 @@ void win_init(win_t *win)
 #if HAVE_LIBFONTS
 	bar_bg = win_res(db, BAR_BG[0], BAR_BG[1] ? BAR_BG[1] : win_bg);
 	bar_fg = win_res(db, BAR_FG[0], BAR_FG[1] ? BAR_FG[1] : win_fg);
-	xft_alloc_color(e, bar_bg, &win->bar_bg);
+	win_alloc_color(e, bar_bg, &win->bar_bg);
 	xft_alloc_color(e, bar_fg, &win->bar_fg);
+	/* apply bar alpha */
+	bar_alpha = win_res(db, RES_CLASS ".bar.alpha", "1.0");
+	alpha = strtof(bar_alpha, &endptr);
+	if (!(*endptr == '\0' && alpha >= 0.0 && alpha <= 1.0))
+		error(EXIT_FAILURE, 0, "Error parsing bar alpha");
+	win->bar_alpha = 0xFF;
+	if (e->depth == 32 && alpha < 1.0) {
+		win->bar_alpha *= alpha;
+		win->bar_bg.red *= alpha;
+		win->bar_bg.green *= alpha;
+		win->bar_bg.blue *= alpha;
+		win->bar_bg.pixel =
+			(((unsigned long) win->bar_bg.blue  >> 8) <<  0) |
+			(((unsigned long) win->bar_bg.green >> 8) <<  8) |
+			(((unsigned long) win->bar_bg.red   >> 8) << 16) |
+			(((unsigned long) win->bar_alpha        ) << 24);
+	}
 
 	f = win_res(db, BAR_FONT[0], BAR_FONT[1] ? BAR_FONT[1] : "monospace-8");
 	win_init_font(e, f);
