@@ -46,6 +46,9 @@ Screenshots
 
 ![Thumb](https://codeberg.org/nsxiv/pages/raw/branch/master/img/thumb.png "Thumb mode")
 
+**Alpha patch:**
+
+![Image](https://www.mitchdotnet.net/images/nsxiv.png "Alpha patch")
 
 Installing via package manager
 ------------------------------
